@@ -1,0 +1,15 @@
+-c requirements.txt
+jupyter
+pandas-profiling
+
+autoflake
+bandit
+black
+isort>=4.3.15
+pylint
+mypy
+
+pytest
+pytest-cov
+pytest-mock
+pytest-sugar
