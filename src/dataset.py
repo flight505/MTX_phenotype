@@ -11,6 +11,7 @@ from src.constants import *
 @st.cache
 def load_samples(xlsx_file_buffer: StringIO) -> pd.DataFrame:
     """Load file with blood samples"""
+
     def date_parser(d):
         return datetime.strptime(d, "%d/%m/%Y %H.%M")
 
@@ -25,6 +26,7 @@ def load_samples(xlsx_file_buffer: StringIO) -> pd.DataFrame:
     return df
 
 
+@st.cache
 def load_infusion_times(xlsx_file_buffer: StringIO) -> pd.DataFrame:
     """Load file with infusion times"""
     mtx_infusion_time = pd.read_excel(
@@ -48,19 +50,73 @@ def load_infusion_times(xlsx_file_buffer: StringIO) -> pd.DataFrame:
     return mtx_infusion_time
 
 
-def remove_patients_with_duplicate_treatments(infusion_times: pd.DataFrame) -> pd.DataFrame:
+@st.cache
+def remove_patients_with_duplicate_treatments(
+    infusion_times: pd.DataFrame,
+) -> pd.DataFrame:
     """Some patients have repeated INFNO treatment numbers, let's remove them for now"""
     df = infusion_times.copy()
-    count_treatment_per_id = (df[PATIENT_ID].astype(str) + "_" + df[INFUSION_NO]).value_counts()
+    count_treatment_per_id = (
+        df[PATIENT_ID].astype(str) + "_" + df[INFUSION_NO]
+    ).value_counts()
     ids_with_duplicate_treatments = {
         s.split("_")[0]
         for s in count_treatment_per_id[count_treatment_per_id > 1].index.values
     }
     print(
         "BEWARE: some patients have duplicate number treatments in infusion times and were removed: ",
-        ids_with_duplicate_treatments
+        ids_with_duplicate_treatments,
     )
     return df[~df[PATIENT_ID].isin(ids_with_duplicate_treatments)]
+
+
+@st.cache
+def merge_samples_to_treatment(samples_df, infusion_times_df):
+    # Now that infusion times have no duplicates
+    # We can pivot the infusion times dataset to make it easier to join to samples
+    # Numeric columns are now INFNO: number of treatment
+    pivot_infusion_times = infusion_times_df.pivot(
+        index=PATIENT_ID, columns=INFUSION_NO, values=INF_STARTDATE
+    ).reset_index()
+
+    samples_with_infusion_times = samples_df.merge(
+        pivot_infusion_times, on=PATIENT_ID, how="left", indicator=True
+    )
+    samples_with_infusion_times["_merge"] = samples_with_infusion_times[
+        "_merge"
+    ].astype(str)
+
+    def date_to_treatment_no(s: pd.Series):
+        if s["_merge"] == "left_only":
+            return None
+        elif not pd.isnull(s["8"]) and s[SAMPLE_TIME] > s["8"]:
+            return 8
+        elif not pd.isnull(s["7"]) and s[SAMPLE_TIME] > s["7"]:
+            return 7
+        elif not pd.isnull(s["6"]) and s[SAMPLE_TIME] > s["6"]:
+            return 6
+        elif not pd.isnull(s["5"]) and s[SAMPLE_TIME] > s["5"]:
+            return 5
+        elif not pd.isnull(s["4"]) and s[SAMPLE_TIME] > s["4"]:
+            return 4
+        elif not pd.isnull(s["3"]) and s[SAMPLE_TIME] > s["3"]:
+            return 3
+        elif not pd.isnull(s["2"]) and s[SAMPLE_TIME] > s["2"]:
+            return 2
+        elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] > s["1"]:
+            return 1
+        elif not pd.isnull(s["0"]) and s[SAMPLE_TIME] > s["0"]:
+            return 0
+        else:
+            return None
+
+    # this apply is probably the slowest thing
+    samples_with_infusion_times[INFUSION_NO] = samples_with_infusion_times.apply(
+        date_to_treatment_no, axis=1
+    )
+
+    samples_with_infusion_times = samples_with_infusion_times.drop(columns=["_merge"])
+    return samples_with_infusion_times
 
 
 def generate_download_link(df: pd.DataFrame) -> str:

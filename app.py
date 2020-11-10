@@ -7,6 +7,7 @@ from src.constants import *
 from src.dataset import generate_download_link
 from src.dataset import load_infusion_times
 from src.dataset import load_samples
+from src.dataset import merge_samples_to_treatment
 from src.dataset import remove_patients_with_duplicate_treatments
 from src.diagnostics import DiagnoseTypes
 from src.diagnostics import DiagnosticClasses
@@ -18,22 +19,36 @@ from src.visualization import visualize_summary_detection
 
 def main():
     initialize_headers()
-    samples_df_buffer = st.sidebar.file_uploader("Choose your samples file", type=["xlsx"])
-    infusion_times_buffer = st.sidebar.file_uploader("Choose your infusion times file", type=["xlsx"])
+    samples_df_buffer = st.sidebar.file_uploader(
+        "Choose your samples file", type=["xlsx"]
+    )
+    infusion_times_buffer = st.sidebar.file_uploader(
+        "Choose your infusion times file", type=["xlsx"]
+    )
 
     if samples_df_buffer is None or infusion_times_buffer is None:
         st.info("Please specify samples and infusion time files in the sidebar")
         return
 
+    # Reset file upload buffers to read the data again
+    # https://discuss.streamlit.io/t/create-multiple-dataframes-from-csv-files-loaded-via-the-multi-file-uploader/6258/4
     samples_df_buffer.seek(0)
     infusion_times_buffer.seek(0)
+
     samples_df = load_samples(samples_df_buffer)
     infusion_times = load_infusion_times(infusion_times_buffer)
 
-    # Careful ! Maybe some NOPHO_NR have duplicates. Let's just filter them for now
+    # Careful ! Maybe some NOPHO_NR have duplicate INFNO at different dates.
+    # Let's just filter them for now and log them in console
     clean_infusion_times = remove_patients_with_duplicate_treatments(infusion_times)
 
-    build_data_preview(samples_df, clean_infusion_times)
+    # Merge samples to treatment times and define treatment number
+    samples_with_treatment_no = merge_samples_to_treatment(
+        samples_df, clean_infusion_times
+    )
+    preview_sample(
+        samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO] > 0]
+    )
 
     selected_diagnostics = st.sidebar.multiselect(
         "Choose the diagnostics you want to study",
@@ -41,7 +56,7 @@ def main():
         format_func=lambda i: DiagnosticClasses[i].name,
     )
 
-    diagnostics = init_diagnostics(samples_df, selected_diagnostics)
+    diagnostics = init_diagnostics(samples_with_treatment_no, selected_diagnostics)
     run_diagnostics(diagnostics)
 
     if len(selected_diagnostics) != 0:
@@ -72,11 +87,10 @@ def initialize_headers():
     st.sidebar.header("Configuration")
 
 
-def build_data_preview(*dfs):
-    """Display Streamlit checkbox to preview a list of dataframes"""
-    with st.beta_expander("Preview the first 100 rows"):
-        for df in dfs:
-            st.dataframe(df[:100])
+def preview_sample(df: pd.DataFrame):
+    with st.beta_expander("Preview a random sample of 100 elements"):
+        st.markdown("Samples data")
+        st.dataframe(df.sample(100))
 
 
 def init_diagnostics(
