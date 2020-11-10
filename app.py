@@ -4,14 +4,14 @@ import pandas as pd
 import streamlit as st
 
 from src.constants import *
-from src.dataset import generate_download_link, load_data
-from src.diagnostics import DiagnoseTypes, DiagnosticClasses
-from src.visualization import (
-    visualize_detected,
-    visualize_detected_by_patient,
-    visualize_patient,
-    visualize_summary_detection,
-)
+from src.dataset import generate_download_link
+from src.dataset import load_data
+from src.diagnostics import DiagnoseTypes
+from src.diagnostics import DiagnosticClasses
+from src.visualization import visualize_detected
+from src.visualization import visualize_detected_by_patient
+from src.visualization import visualize_patient
+from src.visualization import visualize_summary_detection
 
 
 def main():
@@ -53,29 +53,24 @@ def main():
 
 
 def initialize_headers():
-    """Write Streamlit main panel and sidebar titles
-    """
+    """Write Streamlit main panel and sidebar titles"""
     st.title("MTX App")
     st.markdown(
         "Graphs are interactive, scroll them to zoom or double-click to reset view"
     )
-    st.markdown("---")
     st.sidebar.header("Configuration")
 
 
 def build_data_preview(df: pd.DataFrame):
-    """Display Streamlit checkbox to preview the input Dataframe
-    """
-    if st.sidebar.checkbox("Data preview"):
-        st.subheader("Previewing the first 100 rows")
+    """Display Streamlit checkbox to preview the input Dataframe"""
+    with st.beta_expander("Preview the first 100 rows"):
         st.dataframe(df[:100])
 
 
 def init_diagnostics(
     df: pd.DataFrame, list_diagnostic_indices: List[int]
 ) -> List[DiagnoseTypes]:
-    """For each index in list_diagnostic_indices, initialize an instance of Diagnostic class with the data
-    """
+    """For each index in list_diagnostic_indices, initialize an instance of Diagnostic class with the data"""
     return [
         DiagnosticClasses[selected_diagnostic_index](df)
         for selected_diagnostic_index in list_diagnostic_indices
@@ -92,22 +87,19 @@ def run_diagnostics(list_diagnostics: List[DiagnoseTypes]):
 
 
 def visualize_summary(diagnostics: List[DiagnoseTypes]):
-    st.header("Summary of diagnostics")
     st.altair_chart(visualize_summary_detection(diagnostics), use_container_width=True)
 
 
 def visualize_diagnostic_samples(diagnostic_data: DiagnoseTypes):
     st.header(diagnostic_data.name)
-    st.subheader("Visualize all samples")
-    if st.checkbox("View", True, key=f"{diagnostic_data.name}_checkbox_all_samples"):
+    with st.beta_expander("Visualize all samples"):
         st.altair_chart(visualize_detected(diagnostic_data), use_container_width=True)
 
 
 def visualize_diagnostic_positive_samples(
     diagnostic_data: DiagnoseTypes, detected_patient_ids: List[str]
 ):
-    st.subheader("Visualize all positive samples")
-    if st.checkbox("View", key=f"{diagnostic_data.name}_checkbox_detected_samples"):
+    with st.beta_expander("Visualize all positive samples"):
         st.altair_chart(
             visualize_detected_by_patient(diagnostic_data, detected_patient_ids),
             use_container_width=True,
@@ -117,8 +109,7 @@ def visualize_diagnostic_positive_samples(
 def visualize_diagnostic_patient(
     diagnostic_data: DiagnoseTypes, detected_patient_ids: List[str]
 ):
-    st.subheader("Visualize samples for a specific patient")
-    if st.checkbox("View", key=f"{diagnostic_data.name}_checkbox_patient_id"):
+    with st.beta_expander("Visualize samples for a specific patient"):
         selected_patient_id = st.selectbox(
             "Choose a detected patient ID (you can paste the ID you need) : ",
             detected_patient_ids,
@@ -134,20 +125,20 @@ def generate_download(diagnostics: List[DiagnoseTypes]):
     all_dfs = (
         pd.concat([d.data[[PATIENT_ID, DETECTION]] for d in diagnostics])
         .groupby(PATIENT_ID)[DETECTION]
-        .agg(PHONOTYPE=(DETECTION, "max"))
+        .agg("max")
         .reset_index()
+        .rename(columns={DETECTION: "PHONOTYPE"})
     )
     all_dfs["PHONOTYPE"] = all_dfs["PHONOTYPE"].astype(int)
-    st.markdown(f"Number of patients in diagnostics : {len(all_dfs)}")
     st.markdown(
-        f"Number of patients with positive phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 1])}"
+        f"""
+    * Number of patients in diagnostics : {len(all_dfs)}
+    * Number of patients with positive phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 1])}
+    * Number of patients with negative phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 0])}
+    """
     )
-    st.markdown(
-        f"Number of patients with negative phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 0])}"
-    )
-
-    st.markdown(generate_download_link(all_dfs), unsafe_allow_html=True)
-    st.markdown("---")
+    with st.beta_expander("Generate download link"):
+        st.markdown(generate_download_link(all_dfs), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
