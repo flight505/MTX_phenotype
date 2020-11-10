@@ -100,9 +100,9 @@ Feel free to add libraries to the `.in` files and regenerate `.txt` files !
 ### Format Python code
 
 ```bash
-isort
+reorder_python_imports app.py
 black src/
-black app
+black app.py
 ```
 
 ## Project organization

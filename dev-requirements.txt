@@ -5,116 +5,125 @@
 #    pip-compile dev-requirements.in
 #
 appdirs==1.4.4            # via black
-astroid==2.4.1            # via pylint
-astropy==4.0.1.post1      # via pandas-profiling
+argon2-cffi==20.1.0       # via -c requirements.txt, notebook
+aspy.refactor-imports==2.1.1  # via reorder-python-imports
+astroid==2.4.2            # via pylint
+async-generator==1.10     # via -c requirements.txt, nbclient
 atomicwrites==1.4.0       # via pytest
-attrs==19.3.0             # via -c requirements.txt, black, jsonschema, pytest, visions
-autoflake==1.3.1          # via -r dev-requirements.in
-backcall==0.1.0           # via -c requirements.txt, ipython
+attrs==20.2.0             # via -c requirements.txt, jsonschema, pandas-profiling, pytest, visions
+autoflake==1.4            # via -r dev-requirements.in
+backcall==0.2.0           # via -c requirements.txt, ipython
 bandit==1.6.2             # via -r dev-requirements.in
-black==19.10b0            # via -r dev-requirements.in
-bleach==3.1.5             # via -c requirements.txt, nbconvert
-certifi==2020.4.5.1       # via -c requirements.txt, requests
+black==20.8b1             # via -r dev-requirements.in
+bleach==3.2.1             # via -c requirements.txt, nbconvert
+cached-property==1.5.2    # via aspy.refactor-imports
+certifi==2020.6.20        # via -c requirements.txt, matplotlib, requests
+cffi==1.14.3              # via -c requirements.txt, argon2-cffi
 chardet==3.0.4            # via -c requirements.txt, requests
 click==7.1.2              # via -c requirements.txt, black
-colorama==0.4.3           # via -c requirements.txt, bandit, ipython, pylint, pytest
-confuse==1.1.0            # via pandas-profiling
-coverage==5.1             # via pytest-cov
+colorama==0.4.4           # via -c requirements.txt, bandit, ipython, pylint, pytest
+confuse==1.3.0            # via pandas-profiling
+coverage==5.3             # via pytest-cov
 cycler==0.10.0            # via -c requirements.txt, matplotlib
-decorator==4.4.2          # via -c requirements.txt, ipython, networkx, traitlets
+decorator==4.4.2          # via -c requirements.txt, ipython, networkx
 defusedxml==0.6.0         # via -c requirements.txt, nbconvert
 entrypoints==0.3          # via -c requirements.txt, nbconvert
-gitdb==4.0.5              # via gitpython
-gitpython==3.1.2          # via bandit
+gitdb==4.0.5              # via -c requirements.txt, gitpython
+gitpython==3.1.11         # via -c requirements.txt, bandit
 htmlmin==0.1.12           # via pandas-profiling
-idna==2.9                 # via -c requirements.txt, requests
+idna==2.10                # via -c requirements.txt, requests
 imagehash==4.1.0          # via visions
-importlib-metadata==1.6.0  # via -c requirements.txt, jsonschema, pluggy, pytest
-ipykernel==5.2.1          # via -c requirements.txt, ipywidgets, jupyter, jupyter-console, notebook, qtconsole
+importlib-metadata==2.0.0  # via -c requirements.txt, jsonschema, pluggy, pytest, stevedore
+iniconfig==1.1.1          # via pytest
+ipykernel==5.3.4          # via -c requirements.txt, ipywidgets, jupyter, jupyter-console, notebook, qtconsole
 ipython-genutils==0.2.0   # via -c requirements.txt, nbformat, notebook, qtconsole, traitlets
-ipython==7.14.0           # via -c requirements.txt, ipykernel, ipywidgets, jupyter-console
+ipython==7.18.1           # via -c requirements.txt, ipykernel, ipywidgets, jupyter-console
 ipywidgets==7.5.1         # via -c requirements.txt, jupyter, pandas-profiling
-isort==4.3.21             # via -r dev-requirements.in, pylint
-jedi==0.17.0              # via -c requirements.txt, ipython
+isort==5.6.4              # via pylint
+jedi==0.17.2              # via -c requirements.txt, ipython
 jinja2==2.11.2            # via -c requirements.txt, nbconvert, notebook, pandas-profiling
-joblib==0.14.1            # via -c requirements.txt, pandas-profiling, phik
+joblib==0.17.0            # via -c requirements.txt, pandas-profiling, phik
 jsonschema==3.2.0         # via -c requirements.txt, nbformat
-jupyter-client==6.1.3     # via -c requirements.txt, ipykernel, jupyter-console, notebook, qtconsole
-jupyter-console==6.1.0    # via jupyter
+jupyter-client==6.1.7     # via -c requirements.txt, ipykernel, jupyter-console, nbclient, notebook, qtconsole
+jupyter-console==6.2.0    # via jupyter
 jupyter-core==4.6.3       # via -c requirements.txt, jupyter-client, nbconvert, nbformat, notebook, qtconsole
 jupyter==1.0.0            # via -r dev-requirements.in
+jupyterlab-pygments==0.1.2  # via -c requirements.txt, nbconvert
 kiwisolver==1.2.0         # via -c requirements.txt, matplotlib
 lazy-object-proxy==1.4.3  # via astroid
-llvmlite==0.32.1          # via numba
+llvmlite==0.34.0          # via numba
 markupsafe==1.1.1         # via -c requirements.txt, jinja2
-matplotlib==3.2.1         # via -c requirements.txt, missingno, pandas-profiling, phik, seaborn
+matplotlib==3.3.2         # via -c requirements.txt, missingno, pandas-profiling, phik, seaborn
 mccabe==0.6.1             # via pylint
 missingno==0.4.2          # via pandas-profiling
 mistune==0.8.4            # via -c requirements.txt, nbconvert
-more-itertools==8.2.0     # via pytest
-mypy-extensions==0.4.3    # via mypy
-mypy==0.770               # via -r dev-requirements.in
-nbconvert==5.6.1          # via -c requirements.txt, jupyter, notebook
-nbformat==5.0.6           # via -c requirements.txt, ipywidgets, nbconvert, notebook
-networkx==2.4             # via visions
-notebook==6.0.3           # via -c requirements.txt, jupyter, widgetsnbextension
-numba==0.49.1             # via phik
-numpy==1.18.4             # via -c requirements.txt, astropy, imagehash, matplotlib, missingno, numba, pandas, pandas-profiling, phik, pywavelets, scipy, seaborn, visions
-packaging==20.3           # via -c requirements.txt, bleach, pytest, pytest-sugar
-pandas-profiling==2.8.0   # via -r dev-requirements.in
-pandas==1.0.3             # via -c requirements.txt, pandas-profiling, phik, seaborn, visions
-pandocfilters==1.4.2      # via -c requirements.txt, nbconvert
-parso==0.7.0              # via -c requirements.txt, jedi
+mypy-extensions==0.4.3    # via black, mypy
+mypy==0.790               # via -r dev-requirements.in
+nbclient==0.5.1           # via -c requirements.txt, nbconvert
+nbconvert==6.0.7          # via -c requirements.txt, jupyter, notebook
+nbformat==5.0.8           # via -c requirements.txt, ipywidgets, nbclient, nbconvert, notebook
+nest-asyncio==1.4.1       # via -c requirements.txt, nbclient
+networkx==2.5             # via visions
+notebook==6.1.4           # via -c requirements.txt, jupyter, widgetsnbextension
+numba==0.51.2             # via phik
+numpy==1.19.2             # via -c requirements.txt, imagehash, matplotlib, missingno, numba, pandas, pandas-profiling, phik, pywavelets, scipy, seaborn, visions
+packaging==20.4           # via -c requirements.txt, bleach, pytest, pytest-sugar
+pandas-profiling==2.9.0   # via -r dev-requirements.in
+pandas==1.1.3             # via -c requirements.txt, pandas-profiling, phik, seaborn, visions
+pandocfilters==1.4.3      # via -c requirements.txt, nbconvert
+parso==0.7.1              # via -c requirements.txt, jedi
 pathspec==0.8.0           # via black
-pbr==5.4.5                # via stevedore
-phik==0.9.11              # via pandas-profiling
+pbr==5.5.1                # via stevedore
+phik==0.10.0              # via pandas-profiling
 pickleshare==0.7.5        # via -c requirements.txt, ipython
-pillow==7.1.2             # via -c requirements.txt, imagehash, visions
+pillow==8.0.1             # via -c requirements.txt, imagehash, matplotlib, visions
 pluggy==0.13.1            # via pytest
-prometheus-client==0.7.1  # via -c requirements.txt, notebook
-prompt-toolkit==3.0.5     # via -c requirements.txt, ipython, jupyter-console
-py==1.8.1                 # via pytest
+prometheus-client==0.8.0  # via -c requirements.txt, notebook
+prompt-toolkit==3.0.8     # via -c requirements.txt, ipython, jupyter-console
+py==1.9.0                 # via pytest
+pycparser==2.20           # via -c requirements.txt, cffi
 pyflakes==2.2.0           # via autoflake
-pygments==2.6.1           # via -c requirements.txt, ipython, jupyter-console, nbconvert, qtconsole
-pylint==2.5.2             # via -r dev-requirements.in
+pygments==2.7.1           # via -c requirements.txt, ipython, jupyter-console, jupyterlab-pygments, nbconvert, qtconsole
+pylint==2.6.0             # via -r dev-requirements.in
 pyparsing==2.4.7          # via -c requirements.txt, matplotlib, packaging
-pyrsistent==0.16.0        # via -c requirements.txt, jsonschema
-pytest-cov==2.8.1         # via -r dev-requirements.in
-pytest-mock==3.1.0        # via -r dev-requirements.in
-pytest-sugar==0.9.3       # via -r dev-requirements.in
-pytest==5.4.2             # via -r dev-requirements.in, pytest-cov, pytest-mock, pytest-sugar
+pyrsistent==0.17.3        # via -c requirements.txt, jsonschema
+pytest-cov==2.10.1        # via -r dev-requirements.in
+pytest-mock==3.3.1        # via -r dev-requirements.in
+pytest-sugar==0.9.4       # via -r dev-requirements.in
+pytest==6.1.1             # via -r dev-requirements.in, pytest-cov, pytest-mock, pytest-sugar
 python-dateutil==2.8.1    # via -c requirements.txt, jupyter-client, matplotlib, pandas
 pytz==2020.1              # via -c requirements.txt, pandas
 pywavelets==1.1.1         # via imagehash
 pyyaml==5.3.1             # via bandit, confuse
-pyzmq==19.0.1             # via -c requirements.txt, jupyter-client, notebook, qtconsole
-qtconsole==4.7.3          # via jupyter
+pyzmq==19.0.2             # via -c requirements.txt, jupyter-client, notebook, qtconsole
+qtconsole==4.7.7          # via jupyter
 qtpy==1.9.0               # via qtconsole
-regex==2020.5.7           # via black
-requests==2.23.0          # via -c requirements.txt, pandas-profiling
-scipy==1.4.1              # via -c requirements.txt, imagehash, missingno, pandas-profiling, phik, seaborn
-seaborn==0.10.1           # via -c requirements.txt, missingno
+regex==2020.10.23         # via black
+reorder-python-imports==2.3.5  # via -r dev-requirements.in
+requests==2.24.0          # via -c requirements.txt, pandas-profiling
+scipy==1.5.3              # via -c requirements.txt, imagehash, missingno, pandas-profiling, phik, seaborn
+seaborn==0.11.0           # via -c requirements.txt, missingno, pandas-profiling
 send2trash==1.5.0         # via -c requirements.txt, notebook
-six==1.14.0               # via -c requirements.txt, astroid, bandit, bleach, cycler, imagehash, jsonschema, packaging, python-dateutil, stevedore, traitlets
-smmap==3.0.4              # via gitdb
-stevedore==1.32.0         # via bandit
+six==1.15.0               # via -c requirements.txt, argon2-cffi, astroid, bandit, bleach, cycler, imagehash, jsonschema, packaging, python-dateutil
+smmap==3.0.4              # via -c requirements.txt, gitdb
+stevedore==3.2.2          # via bandit
 tangled-up-in-unicode==0.0.6  # via pandas-profiling, visions
 termcolor==1.1.0          # via pytest-sugar
-terminado==0.8.3          # via -c requirements.txt, notebook
+terminado==0.9.1          # via -c requirements.txt, notebook
 testpath==0.4.4           # via -c requirements.txt, nbconvert
-toml==0.10.0              # via -c requirements.txt, black, pylint
-tornado==5.1.1            # via -c requirements.txt, ipykernel, jupyter-client, notebook, terminado
-tqdm==4.46.0              # via pandas-profiling
-traitlets==4.3.3          # via -c requirements.txt, ipykernel, ipython, ipywidgets, jupyter-client, jupyter-core, nbconvert, nbformat, notebook, qtconsole
+toml==0.10.1              # via -c requirements.txt, black, pylint, pytest
+tornado==6.0.4            # via -c requirements.txt, ipykernel, jupyter-client, notebook, terminado
+tqdm==4.50.2              # via pandas-profiling
+traitlets==5.0.5          # via -c requirements.txt, ipykernel, ipython, ipywidgets, jupyter-client, jupyter-core, nbclient, nbconvert, nbformat, notebook, qtconsole
 typed-ast==1.4.1          # via astroid, black, mypy
-typing-extensions==3.7.4.2  # via mypy
-urllib3==1.25.9           # via -c requirements.txt, requests
-visions[type_image_path]==0.4.4  # via pandas-profiling
-wcwidth==0.1.9            # via -c requirements.txt, prompt-toolkit, pytest
+typing-extensions==3.7.4.3  # via black, mypy
+urllib3==1.25.11          # via -c requirements.txt, requests
+visions[type_image_path]==0.5.0  # via pandas-profiling
+wcwidth==0.2.5            # via -c requirements.txt, prompt-toolkit
 webencodings==0.5.1       # via -c requirements.txt, bleach
 widgetsnbextension==3.5.1  # via -c requirements.txt, ipywidgets
 wrapt==1.12.1             # via astroid
-zipp==3.1.0               # via -c requirements.txt, importlib-metadata
+zipp==3.3.2               # via -c requirements.txt, importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
