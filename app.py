@@ -5,7 +5,9 @@ import streamlit as st
 
 from src.constants import *
 from src.dataset import generate_download_link
-from src.dataset import load_data
+from src.dataset import load_infusion_times
+from src.dataset import load_samples
+from src.dataset import remove_patients_with_duplicate_treatments
 from src.diagnostics import DiagnoseTypes
 from src.diagnostics import DiagnosticClasses
 from src.visualization import visualize_detected
@@ -16,13 +18,22 @@ from src.visualization import visualize_summary_detection
 
 def main():
     initialize_headers()
-    xlsx_file_buffer = st.sidebar.file_uploader("Choose your Excel file", type=["xlsx"])
+    samples_df_buffer = st.sidebar.file_uploader("Choose your samples file", type=["xlsx"])
+    infusion_times_buffer = st.sidebar.file_uploader("Choose your infusion times file", type=["xlsx"])
 
-    if xlsx_file_buffer is None:
+    if samples_df_buffer is None or infusion_times_buffer is None:
+        st.info("Please specify samples and infusion time files in the sidebar")
         return
 
-    df = load_data(xlsx_file_buffer)
-    build_data_preview(df)
+    samples_df_buffer.seek(0)
+    infusion_times_buffer.seek(0)
+    samples_df = load_samples(samples_df_buffer)
+    infusion_times = load_infusion_times(infusion_times_buffer)
+
+    # Careful ! Maybe some NOPHO_NR have duplicates. Let's just filter them for now
+    clean_infusion_times = remove_patients_with_duplicate_treatments(infusion_times)
+
+    build_data_preview(samples_df, clean_infusion_times)
 
     selected_diagnostics = st.sidebar.multiselect(
         "Choose the diagnostics you want to study",
@@ -30,7 +41,7 @@ def main():
         format_func=lambda i: DiagnosticClasses[i].name,
     )
 
-    diagnostics = init_diagnostics(df, selected_diagnostics)
+    diagnostics = init_diagnostics(samples_df, selected_diagnostics)
     run_diagnostics(diagnostics)
 
     if len(selected_diagnostics) != 0:
@@ -61,10 +72,11 @@ def initialize_headers():
     st.sidebar.header("Configuration")
 
 
-def build_data_preview(df: pd.DataFrame):
-    """Display Streamlit checkbox to preview the input Dataframe"""
+def build_data_preview(*dfs):
+    """Display Streamlit checkbox to preview a list of dataframes"""
     with st.beta_expander("Preview the first 100 rows"):
-        st.dataframe(df[:100])
+        for df in dfs:
+            st.dataframe(df[:100])
 
 
 def init_diagnostics(
