@@ -18,7 +18,7 @@ from src.visualization import visualize_summary_detection
 
 
 def main():
-    initialize_headers()
+    initialize_app_info()
     samples_df_buffer = st.sidebar.file_uploader(
         "Choose your samples file", type=["xlsx"]
     )
@@ -85,8 +85,9 @@ def main():
         st.markdown("---")
 
 
-def initialize_headers():
-    """Write Streamlit main panel and sidebar titles"""
+def initialize_app_info():
+    """Write Streamlit main panel and sidebar titles + tab info"""
+    st.set_page_config(page_title="MTX app", page_icon="bar_chart")
     st.title("MTX App")
     st.markdown(
         "Graphs are interactive, scroll them to zoom or double-click to reset view"
