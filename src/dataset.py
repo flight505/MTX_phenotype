@@ -50,7 +50,7 @@ def load_infusion_times(xlsx_file_buffer: StringIO) -> pd.DataFrame:
     return mtx_infusion_time
 
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def remove_patients_with_duplicate_treatments(
     infusion_times: pd.DataFrame,
 ) -> pd.DataFrame:
@@ -63,10 +63,11 @@ def remove_patients_with_duplicate_treatments(
         s.split("_")[0]
         for s in count_treatment_per_id[count_treatment_per_id > 1].index.values
     }
-    print(
-        "BEWARE: some patients have duplicate number treatments in infusion times and were removed: ",
-        ids_with_duplicate_treatments,
-    )
+    if len(ids_with_duplicate_treatments) != 0:
+        st.warning(
+            f"Patients have duplicate number treatments in infusion times "
+            f"and were removed: {ids_with_duplicate_treatments}"
+        )
     return df[~df[PATIENT_ID].isin(ids_with_duplicate_treatments)]
 
 
