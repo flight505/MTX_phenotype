@@ -50,13 +50,20 @@ def main():
         samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO] > 0]
     )
 
+    # Filter by INFNO - treatment number when some are selected
+    selected_treatments_to_filter = st.multiselect("Select treatment no (INFNO) to filter by:", range(1, 9))
+    if len(selected_treatments_to_filter) == 0:
+        df = samples_with_treatment_no.copy()
+    else:
+        df = samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO].isin(selected_treatments_to_filter)].copy()
+
     selected_diagnostics = st.sidebar.multiselect(
         "Choose the diagnostics you want to study",
         options=range(0, len(DiagnosticClasses)),
         format_func=lambda i: DiagnosticClasses[i].name,
     )
 
-    diagnostics = init_diagnostics(samples_with_treatment_no, selected_diagnostics)
+    diagnostics = init_diagnostics(df, selected_diagnostics)
     run_diagnostics(diagnostics)
 
     if len(selected_diagnostics) != 0:
