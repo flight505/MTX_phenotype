@@ -33,15 +33,15 @@ def load_infusion_times(xlsx_file_buffer: StringIO) -> pd.DataFrame:
         xlsx_file_buffer,
         usecols=[PATIENT_ID, INFUSION_NO, INF_STARTDATE, INF_STARTHOUR],
     )
-    # Cheat: we extract the hour from INF_STARTHOUR, which in current Excel file have a fake date prefixed
+    # Cheat: we extract the hour from INF_STARTHOUR
     # and inject this hour into INF_STARTDATE which has an hour of 00:00:00
     mtx_infusion_time[INF_STARTDATE] = (
-        mtx_infusion_time[INF_STARTDATE].dt.strftime("%d/%m/%Y")
+        mtx_infusion_time[INF_STARTDATE].dt.strftime("%d-%m-%Y")
         + " "
-        + mtx_infusion_time[INF_STARTHOUR].dt.strftime("%H:%M:%S")
+        + mtx_infusion_time[INF_STARTHOUR]
     )
     mtx_infusion_time[INF_STARTDATE] = pd.to_datetime(
-        mtx_infusion_time[INF_STARTDATE], format="%d/%m/%Y %H:%M:%S"
+        mtx_infusion_time[INF_STARTDATE], format="%d-%m-%Y %H:%M:%S"
     )
     mtx_infusion_time = mtx_infusion_time.drop([INF_STARTHOUR], axis=1)
     mtx_infusion_time[PATIENT_ID] = mtx_infusion_time[PATIENT_ID].astype(int)
