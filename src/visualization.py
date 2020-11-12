@@ -4,6 +4,7 @@ from typing import List
 
 import altair as alt
 import pandas as pd
+import plotly.express as px
 import plotly.io as pio
 
 from src.constants import *
@@ -155,3 +156,30 @@ def visualize_summary_detection(diagnostics: List[DiagnoseTypes]) -> alt.Chart:
         .interactive()
     )
     return chart
+
+
+def beta_visualize_dme(samples_with_treatment_no: pd.DataFrame, nopho_nr):
+    data = samples_with_treatment_no[
+        (samples_with_treatment_no[P_CODE] == "NPU02739")
+        & (samples_with_treatment_no[PATIENT_ID] == nopho_nr)
+    ].copy()
+    data[INFUSION_NO] = data[INFUSION_NO].astype(str)
+    fig = (
+        px.scatter(
+            data,
+            x=DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE,
+            y=VALUE,
+            color=INFUSION_NO,
+            hover_data=[
+                PATIENT_ID,
+                INFUSION_NO,
+                SAMPLE_TIME,
+                INF_STARTDATE,
+                DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE,
+                VALUE,
+            ],
+        )
+        .update_traces(mode="lines+markers", marker=dict(size=6), line=dict(width=1))
+        .update_layout(yaxis_type="log")
+    )
+    return fig

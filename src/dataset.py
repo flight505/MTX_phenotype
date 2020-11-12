@@ -89,31 +89,38 @@ def merge_samples_to_treatment(samples_df, infusion_times_df):
 
     def date_to_treatment_no(s: pd.Series):
         if s["_merge"] == "left_only":
-            return None
+            return [None, None, None]
         elif not pd.isnull(s["8"]) and s[SAMPLE_TIME] > s["8"]:
-            return 8
+            return [8, s["8"], s[SAMPLE_TIME] - s["8"]]
         elif not pd.isnull(s["7"]) and s[SAMPLE_TIME] > s["7"]:
-            return 7
+            return [7, s["7"], s[SAMPLE_TIME] - s["7"]]
         elif not pd.isnull(s["6"]) and s[SAMPLE_TIME] > s["6"]:
-            return 6
+            return [6, s["6"], s[SAMPLE_TIME] - s["6"]]
         elif not pd.isnull(s["5"]) and s[SAMPLE_TIME] > s["5"]:
-            return 5
+            return [5, s["5"], s[SAMPLE_TIME] - s["5"]]
         elif not pd.isnull(s["4"]) and s[SAMPLE_TIME] > s["4"]:
-            return 4
+            return [4, s["4"], s[SAMPLE_TIME] - s["4"]]
         elif not pd.isnull(s["3"]) and s[SAMPLE_TIME] > s["3"]:
-            return 3
+            return [3, s["3"], s[SAMPLE_TIME] - s["3"]]
         elif not pd.isnull(s["2"]) and s[SAMPLE_TIME] > s["2"]:
-            return 2
+            return [2, s["2"], s[SAMPLE_TIME] - s["2"]]
         elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] > s["1"]:
-            return 1
+            return [1, s["1"], s[SAMPLE_TIME] - s["1"]]
         elif not pd.isnull(s["0"]) and s[SAMPLE_TIME] > s["0"]:
-            return 0
+            return [0, s["0"], s[SAMPLE_TIME] - s["0"]]
         else:
-            return None
+            return [None, None, None]
 
-    # this apply is probably the slowest thing
-    samples_with_infusion_times[INFUSION_NO] = samples_with_infusion_times.apply(
-        date_to_treatment_no, axis=1
+    # TODO: those 2 apply methods are probably the slowest of the app, should vectorize them
+    samples_with_infusion_times[
+        [INFUSION_NO, INF_STARTDATE, DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE]
+    ] = samples_with_infusion_times.apply(
+        date_to_treatment_no, axis=1, result_type="expand"
+    )
+    samples_with_infusion_times[
+        DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE
+    ] = samples_with_infusion_times[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE].astype(
+        "timedelta64[h]"
     )
 
     samples_with_infusion_times = samples_with_infusion_times.drop(columns=["_merge"])

@@ -11,6 +11,7 @@ from src.dataset import merge_samples_to_treatment
 from src.dataset import remove_patients_with_duplicate_treatments
 from src.diagnostics import DiagnoseTypes
 from src.diagnostics import DiagnosticClasses
+from src.visualization import beta_visualize_dme
 from src.visualization import visualize_detected
 from src.visualization import visualize_detected_by_patient
 from src.visualization import visualize_patient
@@ -51,17 +52,29 @@ def main():
     )
 
     # Filter by INFNO - treatment number when some are selected
-    selected_treatments_to_filter = st.multiselect("Select treatment no (INFNO) to filter by:", range(1, 9))
+    selected_treatments_to_filter = st.multiselect(
+        "Select treatment no (INFNO) to filter by:", range(1, 9)
+    )
     if len(selected_treatments_to_filter) == 0:
         df = samples_with_treatment_no.copy()
     else:
-        df = samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO].isin(selected_treatments_to_filter)].copy()
+        df = samples_with_treatment_no[
+            samples_with_treatment_no[INFUSION_NO].isin(selected_treatments_to_filter)
+        ].copy()
 
     selected_diagnostics = st.sidebar.multiselect(
         "Choose the diagnostics you want to study",
         options=range(0, len(DiagnosticClasses)),
         format_func=lambda i: DiagnosticClasses[i].name,
     )
+
+    with st.beta_expander("DEBUG: check DME graphs"):
+        select_nopho_nr = st.selectbox(
+            "Select patient ID", df.loc[df[P_CODE] == "NPU02739", PATIENT_ID].unique()
+        )
+        st.plotly_chart(
+            beta_visualize_dme(df, select_nopho_nr), use_container_width=True
+        )
 
     diagnostics = init_diagnostics(df, selected_diagnostics)
     run_diagnostics(diagnostics)

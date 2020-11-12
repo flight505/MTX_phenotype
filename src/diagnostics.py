@@ -18,8 +18,7 @@ class AbstractDiagnose(ABC):
     """
 
     def __init__(self):
-        """For each diagnostic we'd like to only store the necessary subset of data.
-        """
+        """For each diagnostic we'd like to only store the necessary subset of data."""
         self.data: pd.DataFrame = pd.DataFrame()
 
     @abstractmethod
@@ -215,7 +214,8 @@ class Diagnose4(AbstractDiagnose):
     def run_detection(self) -> None:
         # study NPU19651
         detection1 = self.data.loc[
-            self.data[P_CODE] == "NPU19651", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            self.data[P_CODE] == "NPU19651",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
         ].copy()
         detection1[DETECTION] = detection1[VALUE] > self.param_concentration_liver
         detection1 = detection1[[PATIENT_ID, SAMPLE_TIME, DETECTION]]
@@ -265,7 +265,8 @@ class Diagnose6(AbstractDiagnose):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
-            df[P_CODE] == "NPU18016", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            df[P_CODE] == "NPU18016",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
         ]
         self.param_concentration: st.DeltaGenerator = st.empty
 
@@ -307,7 +308,8 @@ class Diagnose8(AbstractDiagnose):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
-            df[P_CODE] == "NPU03568", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            df[P_CODE] == "NPU03568",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
         ]
         self.param_concentration: st.DeltaGenerator = st.empty
         self.param_hours: st.DeltaGenerator = st.empty
