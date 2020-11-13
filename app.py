@@ -48,7 +48,7 @@ def main():
         samples_df, clean_infusion_times
     )
     preview_sample(
-        samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO] > 0]
+        samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO].notnull()]
     )
 
     # Filter by INFNO - treatment number when some are selected
@@ -110,7 +110,7 @@ def initialize_app_info():
 
 def preview_sample(df: pd.DataFrame):
     with st.beta_expander("Preview a random sample of 100 elements"):
-        st.markdown("Samples data")
+        st.markdown("Sampled data")
         st.dataframe(df.sample(100))
 
 

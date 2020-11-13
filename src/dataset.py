@@ -106,8 +106,8 @@ def merge_samples_to_treatment(samples_df, infusion_times_df):
             return [2, s["2"], s[SAMPLE_TIME] - s["2"]]
         elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] > s["1"]:
             return [1, s["1"], s[SAMPLE_TIME] - s["1"]]
-        elif not pd.isnull(s["0"]) and s[SAMPLE_TIME] > s["0"]:
-            return [0, s["0"], s[SAMPLE_TIME] - s["0"]]
+        elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] < s["1"]:
+            return [0, s["1"], s[SAMPLE_TIME] - s["1"]]
         else:
             return [None, None, None]
 
