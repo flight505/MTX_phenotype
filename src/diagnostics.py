@@ -60,7 +60,7 @@ class Diagnose1(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE] == "NPU02902",
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
         self.param_concentration = st.empty
         self.param_days = st.empty
@@ -100,7 +100,7 @@ class Diagnose2(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE] == "NPU19748",
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, REF_PATIENT, SEX, MP6_STOP],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, REF_PATIENT, INFUSION_NO, SEX, MP6_STOP],
         ]
         # clean REFTEXT which is mostly <8,0 to transform to 8.0
         # TODO : not checking how clean is the data !
@@ -177,7 +177,7 @@ class Diagnose4(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE].isin(["NPU19651", "NPU01684", "NPU01370"]),
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
         self.param_concentration_liver = st.empty
         self.param_concentration_koagulation = st.empty
@@ -267,7 +267,7 @@ class Diagnose6(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE] == "NPU18016",
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
         self.param_concentration = st.empty
 
@@ -310,7 +310,7 @@ class Diagnose8(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE] == "NPU03568",
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
         self.param_concentration = st.empty
         self.param_hours = st.empty
@@ -350,7 +350,7 @@ class Diagnose9(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE].isin(["NPU19652", "NPU19653", "DNK05451", "NPU19748"]),
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ].dropna(subset=[VALUE])
 
         self.param_times = st.empty

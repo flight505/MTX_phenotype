@@ -37,7 +37,7 @@ def visualize_detected(diagnostic: DiagnoseTypes) -> alt.Chart:
             color=alt.Color(f"{DETECTION}:N", scale=alt.Scale(domain=[0, 1])),
             opacity=alt.condition(alt.datum[DETECTION], alt.value(1.0), alt.value(0.2)),
             row=alt.Row(f"{P_CODE}:N", title=""),
-            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         )
         .interactive()
     )
@@ -73,7 +73,7 @@ def visualize_detected_by_patient(
             y=alt.Y(f"{VALUE}:Q", title="value"),
             color=alt.Color(f"{PATIENT_ID}:N", title="Patient ID"),
             row=alt.Row(f"{P_CODE}:N", title=""),
-            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         )
         .interactive()
     )
@@ -102,7 +102,7 @@ def visualize_patient(diagnostic: DiagnoseTypes, patient_id: str) -> alt.Chart:
     base = alt.Chart(source).encode(
         x=alt.X(f"{SAMPLE_TIME}:T", title="Date"),
         y=alt.Y(f"{VALUE}:Q", title="value"),
-        tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
+        tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
     )
     line = base.mark_line(size=1)
     points = base.mark_point(filled=True, size=90).encode(
