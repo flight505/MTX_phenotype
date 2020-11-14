@@ -31,7 +31,7 @@ def load_infusion_times(xlsx_file_buffer: StringIO) -> pd.DataFrame:
     """Load file with infusion times"""
     mtx_infusion_time = pd.read_excel(
         xlsx_file_buffer,
-        usecols=[PATIENT_ID, INFUSION_NO, INF_STARTDATE, INF_STARTHOUR],
+        usecols=[PATIENT_ID, INFUSION_NO, SEX, MP6_STOP, INF_STARTDATE, INF_STARTHOUR],
     )
     # Cheat: we extract the hour from INF_STARTHOUR
     # and inject this hour into INF_STARTDATE which has an hour of 00:00:00
@@ -54,7 +54,7 @@ def load_infusion_times(xlsx_file_buffer: StringIO) -> pd.DataFrame:
 def remove_patients_with_duplicate_treatments(
     infusion_times: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Some patients have repeated INFNO treatment numbers, let's remove them for now"""
+    """Some patients have repeated INFNO treatment numbers, let's remove those patients for now"""
     df = infusion_times.copy()
     count_treatment_per_id = (
         df[PATIENT_ID].astype(str) + "_" + df[INFUSION_NO]
@@ -111,7 +111,7 @@ def merge_samples_to_treatment(samples_df, infusion_times_df):
         else:
             return [None, None, None]
 
-    # TODO: those 2 apply methods are probably the slowest of the app, should vectorize them
+    # TODO: this apply method is probably the slowest of the app, can we vectorize this ?
     samples_with_infusion_times[
         [INFUSION_NO, INF_STARTDATE, DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE]
     ] = samples_with_infusion_times.apply(
@@ -124,6 +124,15 @@ def merge_samples_to_treatment(samples_df, infusion_times_df):
     )
 
     samples_with_infusion_times = samples_with_infusion_times.drop(columns=["_merge"])
+
+    # integrate MP6_stop and SEX separately so we can filter inaccurate data
+    sex_per_patient = infusion_times_df.loc[infusion_times_df[SEX] != 0, [PATIENT_ID, SEX]].drop_duplicates()
+    samples_with_infusion_times = samples_with_infusion_times.merge(sex_per_patient, on=PATIENT_ID)
+
+    MP6_per_patient_treatment = infusion_times_df[[PATIENT_ID, INFUSION_NO, MP6_STOP]].drop_duplicates()
+    MP6_per_patient_treatment[INFUSION_NO] = MP6_per_patient_treatment[INFUSION_NO].astype(float)
+    samples_with_infusion_times = samples_with_infusion_times.merge(MP6_per_patient_treatment, on=[PATIENT_ID, INFUSION_NO])
+
     return samples_with_infusion_times
 
 
