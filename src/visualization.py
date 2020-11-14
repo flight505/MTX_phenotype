@@ -4,6 +4,7 @@ from typing import List
 
 import altair as alt
 import pandas as pd
+import plotly.express as px
 import plotly.io as pio
 
 from src.constants import *
@@ -36,7 +37,7 @@ def visualize_detected(diagnostic: DiagnoseTypes) -> alt.Chart:
             color=alt.Color(f"{DETECTION}:N", scale=alt.Scale(domain=[0, 1])),
             opacity=alt.condition(alt.datum[DETECTION], alt.value(1.0), alt.value(0.2)),
             row=alt.Row(f"{P_CODE}:N", title=""),
-            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         )
         .interactive()
     )
@@ -72,7 +73,7 @@ def visualize_detected_by_patient(
             y=alt.Y(f"{VALUE}:Q", title="value"),
             color=alt.Color(f"{PATIENT_ID}:N", title="Patient ID"),
             row=alt.Row(f"{P_CODE}:N", title=""),
-            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         )
         .interactive()
     )
@@ -101,7 +102,7 @@ def visualize_patient(diagnostic: DiagnoseTypes, patient_id: str) -> alt.Chart:
     base = alt.Chart(source).encode(
         x=alt.X(f"{SAMPLE_TIME}:T", title="Date"),
         y=alt.Y(f"{VALUE}:Q", title="value"),
-        tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+        tooltip=[PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
     )
     line = base.mark_line(size=1)
     points = base.mark_point(filled=True, size=90).encode(
@@ -155,3 +156,30 @@ def visualize_summary_detection(diagnostics: List[DiagnoseTypes]) -> alt.Chart:
         .interactive()
     )
     return chart
+
+
+def beta_visualize_dme(samples_with_treatment_no: pd.DataFrame, nopho_nr):
+    data = samples_with_treatment_no[
+        (samples_with_treatment_no[P_CODE] == "NPU02739")
+        & (samples_with_treatment_no[PATIENT_ID] == nopho_nr)
+    ].copy()
+    data[INFUSION_NO] = data[INFUSION_NO].astype(str)
+    fig = (
+        px.scatter(
+            data,
+            x=DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE,
+            y=VALUE,
+            color=INFUSION_NO,
+            hover_data=[
+                PATIENT_ID,
+                INFUSION_NO,
+                SAMPLE_TIME,
+                INF_STARTDATE,
+                DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE,
+                VALUE,
+            ],
+        )
+        .update_traces(mode="lines+markers", marker=dict(size=6), line=dict(width=1))
+        .update_layout(yaxis_type="log")
+    )
+    return fig

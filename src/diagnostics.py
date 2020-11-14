@@ -18,8 +18,7 @@ class AbstractDiagnose(ABC):
     """
 
     def __init__(self):
-        """For each diagnostic we'd like to only store the necessary subset of data.
-        """
+        """For each diagnostic we'd like to only store the necessary subset of data."""
         self.data: pd.DataFrame = pd.DataFrame()
 
     @abstractmethod
@@ -60,10 +59,11 @@ class Diagnose1(AbstractDiagnose):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
-            df[P_CODE] == "NPU02902", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE]
+            df[P_CODE] == "NPU02902",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
-        self.param_concentration: st.DeltaGenerator = st.empty
-        self.param_days: st.DeltaGenerator = st.empty
+        self.param_concentration = st.empty
+        self.param_days = st.empty
 
     def update_params_in_sidebar(self):
         st.sidebar.markdown(f"**Parameters for {self.name}**")
@@ -100,7 +100,7 @@ class Diagnose2(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE] == "NPU19748",
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, REF_PATIENT],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, REF_PATIENT, INFUSION_NO, SEX, MP6_STOP],
         ]
         # clean REFTEXT which is mostly <8,0 to transform to 8.0
         # TODO : not checking how clean is the data !
@@ -109,8 +109,8 @@ class Diagnose2(AbstractDiagnose):
             .apply(lambda n: n.replace("<", "").replace(",", "."))
             .astype(float)
         )
-        self.param_concentration: st.DeltaGenerator = st.empty
-        self.param_days: st.DeltaGenerator = st.empty
+        self.param_concentration = st.empty
+        self.param_days = st.empty
 
     def update_params_in_sidebar(self):
         st.sidebar.markdown(f"**Parameters for {self.name}**")
@@ -177,11 +177,11 @@ class Diagnose4(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE].isin(["NPU19651", "NPU01684", "NPU01370"]),
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
-        self.param_concentration_liver: st.DeltaGenerator = st.empty
-        self.param_concentration_koagulation: st.DeltaGenerator = st.empty
-        self.param_concentration_bilirubin: st.DeltaGenerator = st.empty
+        self.param_concentration_liver = st.empty
+        self.param_concentration_koagulation = st.empty
+        self.param_concentration_bilirubin = st.empty
 
     def update_params_in_sidebar(self):
         st.sidebar.markdown(f"**Parameters for {self.name}**")
@@ -215,7 +215,8 @@ class Diagnose4(AbstractDiagnose):
     def run_detection(self) -> None:
         # study NPU19651
         detection1 = self.data.loc[
-            self.data[P_CODE] == "NPU19651", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            self.data[P_CODE] == "NPU19651",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
         ].copy()
         detection1[DETECTION] = detection1[VALUE] > self.param_concentration_liver
         detection1 = detection1[[PATIENT_ID, SAMPLE_TIME, DETECTION]]
@@ -265,9 +266,10 @@ class Diagnose6(AbstractDiagnose):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
-            df[P_CODE] == "NPU18016", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            df[P_CODE] == "NPU18016",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
-        self.param_concentration: st.DeltaGenerator = st.empty
+        self.param_concentration = st.empty
 
     def update_params_in_sidebar(self):
         st.sidebar.markdown(f"**Parameters for {self.name}**")
@@ -307,10 +309,11 @@ class Diagnose8(AbstractDiagnose):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
-            df[P_CODE] == "NPU03568", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            df[P_CODE] == "NPU03568",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ]
-        self.param_concentration: st.DeltaGenerator = st.empty
-        self.param_hours: st.DeltaGenerator = st.empty
+        self.param_concentration = st.empty
+        self.param_hours = st.empty
 
     def update_params_in_sidebar(self):
         st.sidebar.markdown(f"**Parameters for {self.name}**")
@@ -347,10 +350,10 @@ class Diagnose9(AbstractDiagnose):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
             df[P_CODE].isin(["NPU19652", "NPU19653", "DNK05451", "NPU19748"]),
-            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE],
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, INFUSION_NO, SEX, MP6_STOP],
         ].dropna(subset=[VALUE])
 
-        self.param_times: st.DeltaGenerator = st.empty
+        self.param_times = st.empty
 
     def update_params_in_sidebar(self):
         st.sidebar.markdown(f"**Parameters for {self.name}**")
@@ -387,6 +390,174 @@ class Diagnose9(AbstractDiagnose):
         self.data[DETECTION] = self.data[DETECTION].astype(bool)
 
 
+class DME(AbstractDiagnose):
+    name: str = "DME"
+    CREA_code: str = "NPU18016"
+    MTX_code: str = "NPU02739"
+
+    THRESHOLD_CREA_INCREASE_FROM_PREV_SAMPLE = (
+        0.3 * 88.42
+    )  # to convert mg/dl to μmol/l, multiply by 88.4
+    THRESHOLD_CREA_INCREASE_ABOVE_BASELINE = 1.5
+    THRESHOLD_MTX_36H = 20.0
+    THRESHOLD_MTX_42H = 10.0
+    THRESHOLD_MTX_48H = 2.0
+
+    def __init__(self, df: pd.DataFrame):
+        super().__init__()
+
+        self.data: pd.DataFrame = (
+            df.loc[
+                (df[P_CODE].isin([self.CREA_code, self.MTX_code]))
+                & (df[INFUSION_NO].notnull()),
+                [
+                    PATIENT_ID,
+                    SAMPLE_TIME,
+                    P_CODE,
+                    VALUE,
+                    INFUSION_NO,
+                    DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE,
+                    SEX,
+                    MP6_STOP,
+                ],
+            ]
+            .dropna(subset=[VALUE])
+            .sort_values([PATIENT_ID, P_CODE, SAMPLE_TIME])
+        )
+
+        self.threshold_crea_previous_sample = st.empty
+        self.threshold_crea_above_baseline = st.empty
+        self.threshold_mtx_36h = st.empty
+        self.threshold_mtx_42h = st.empty
+        self.threshold_mtx_48h = st.empty
+
+    def update_params_in_sidebar(self):
+        st.sidebar.markdown(f"**Parameters for {self.name}**")
+        self.threshold_crea_previous_sample = st.sidebar.slider(
+            "Select threshold CREA increase compared to previous sample",
+            0.0,
+            5 * self.THRESHOLD_CREA_INCREASE_FROM_PREV_SAMPLE,
+            self.THRESHOLD_CREA_INCREASE_FROM_PREV_SAMPLE,
+        )
+        self.threshold_crea_above_baseline = st.sidebar.slider(
+            "Select threshold CREA increase fold above baseline",
+            0.0,
+            5 * self.THRESHOLD_CREA_INCREASE_ABOVE_BASELINE,
+            self.THRESHOLD_CREA_INCREASE_ABOVE_BASELINE,
+        )
+        self.threshold_mtx_36h = st.sidebar.slider(
+            "Select threshold MTX between 36h - 42h",
+            0.0,
+            5 * self.THRESHOLD_MTX_36H,
+            self.THRESHOLD_MTX_36H,
+        )
+        self.threshold_mtx_42h = st.sidebar.slider(
+            "Select threshold MTX between 42h - 48h",
+            0.0,
+            5 * self.THRESHOLD_MTX_42H,
+            self.THRESHOLD_MTX_42H,
+        )
+        self.threshold_mtx_48h = st.sidebar.slider(
+            "Select threshold MTX after 48h",
+            0.0,
+            5 * self.THRESHOLD_MTX_48H,
+            self.THRESHOLD_MTX_48H,
+        )
+
+    def run_detection(self) -> None:
+
+        # for baseline CREA, we take all samples before first infusion time, which is INFNO = 0
+        # then patients have multiple values so we take the closest to first infusion
+        # which is max value of difference time to infusion
+        baseline_crea = self.data.loc[
+            (self.data[P_CODE] == self.CREA_code) & (self.data[INFUSION_NO] == 0),
+            [PATIENT_ID, VALUE, DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE],
+        ]
+        baseline_crea = baseline_crea.loc[
+            baseline_crea.groupby(PATIENT_ID)[
+                DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE
+            ].idxmax(),
+            [PATIENT_ID, VALUE],
+        ].rename(columns={VALUE: "baseline_crea"})
+        self.data = self.data.merge(baseline_crea, on=PATIENT_ID)
+
+        # For criteria one, need to shift the data so previous sample is in current sample
+        # by patient, treatment number and p_code
+        self.data["prev_value"] = self.data.groupby([PATIENT_ID, INFUSION_NO, P_CODE])[
+            VALUE
+        ].shift()
+
+        # Criteria 1 : Increase in plasma creatinine by > 0.3 compared to previous sample
+        criteria_one = (
+            (self.data[INFUSION_NO] != 0)
+            & (self.data[P_CODE] == self.CREA_code)
+            & (self.data["prev_value"].notnull())
+            & (
+                self.data[VALUE] - self.data["prev_value"]
+                > self.threshold_crea_previous_sample
+            )
+        )
+
+        # Criteria 2 : Increase of 1.5 fold above baseline
+        criteria_two = (
+            (self.data[INFUSION_NO] != 0)
+            & (self.data[P_CODE] == self.CREA_code)
+            & (
+                self.data[VALUE] / self.data["baseline_crea"]
+                > self.threshold_crea_above_baseline
+            )
+        )
+
+        # Criteria 3 : between 36 and 42 hours > 20 µM
+        criteria_three = (
+            (self.data[INFUSION_NO] != 0)
+            & (self.data[P_CODE] == self.MTX_code)
+            & (self.data[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE] >= 36)
+            & (self.data[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE] < 42)
+            & (self.data[VALUE] > self.threshold_mtx_36h)
+        )
+
+        # Criteria 4 : between 42 and 48 hours > 10 µM
+        criteria_four = (
+            (self.data[INFUSION_NO] != 0)
+            & (self.data[P_CODE] == self.MTX_code)
+            & (self.data[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE] >= 42)
+            & (self.data[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE] < 48)
+            & (self.data[VALUE] > self.threshold_mtx_42h)
+        )
+
+        # Criteria 5 : longer than 48 hours > 3 µM
+        criteria_five = (
+            (self.data[INFUSION_NO] != 0)
+            & (self.data[P_CODE] == self.MTX_code)
+            & (self.data[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE] > 48)
+            & (self.data[VALUE] > self.threshold_mtx_48h)
+        )
+
+        # TODO: Hmmm the intersection of critera 1-2 with criteria 3-4-5 is null, no luck for fact checking
+        # st.write((criteria_one | criteria_two).value_counts())
+        # st.write((criteria_three | criteria_four | criteria_five).value_counts())
+        # st.write(((criteria_one | criteria_two) & (criteria_three | criteria_four | criteria_five)).value_counts())
+
+        # Detection = Criteria 1 or 2 + at least one of criteria 3,4,5
+        self.data[DETECTION] = False
+        self.data.loc[
+            (criteria_one | criteria_two)
+            & (criteria_three | criteria_four | criteria_five),
+            DETECTION,
+        ] = True
+
+
 # choose classes to expose to main app
-DiagnosticClasses = [Diagnose1, Diagnose2, Diagnose4, Diagnose6, Diagnose8, Diagnose9]
-DiagnoseTypes = Union[Diagnose1, Diagnose2, Diagnose4, Diagnose6, Diagnose8, Diagnose9]
+DiagnosticClasses = [
+    Diagnose1,
+    Diagnose2,
+    Diagnose4,
+    Diagnose6,
+    Diagnose8,
+    Diagnose9,
+    DME,
+]
+DiagnoseTypes = Union[
+    Diagnose1, Diagnose2, Diagnose4, Diagnose6, Diagnose8, Diagnose9, DME
+]

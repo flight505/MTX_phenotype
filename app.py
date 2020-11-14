@@ -4,31 +4,73 @@ import pandas as pd
 import streamlit as st
 
 from src.constants import *
-from src.dataset import generate_download_link, load_data
-from src.diagnostics import DiagnoseTypes, DiagnosticClasses
-from src.visualization import (
-    visualize_detected,
-    visualize_detected_by_patient,
-    visualize_patient,
-    visualize_summary_detection,
-)
+from src.dataset import generate_download_link
+from src.dataset import load_infusion_times
+from src.dataset import load_samples
+from src.dataset import merge_samples_to_treatment
+from src.dataset import remove_patients_with_duplicate_treatments
+from src.diagnostics import DiagnoseTypes
+from src.diagnostics import DiagnosticClasses
+from src.visualization import beta_visualize_dme
+from src.visualization import visualize_detected
+from src.visualization import visualize_detected_by_patient
+from src.visualization import visualize_patient
+from src.visualization import visualize_summary_detection
 
 
 def main():
-    initialize_headers()
-    xlsx_file_buffer = st.sidebar.file_uploader("Choose your Excel file", type=["xlsx"])
+    initialize_app_info()
+    samples_df_buffer = st.sidebar.file_uploader(
+        "Choose your samples file", type=["xlsx"]
+    )
+    infusion_times_buffer = st.sidebar.file_uploader(
+        "Choose your infusion times file", type=["xlsx"]
+    )
 
-    if xlsx_file_buffer is None:
+    if samples_df_buffer is None or infusion_times_buffer is None:
+        st.info("Please specify samples and infusion time files in the sidebar")
         return
 
-    df = load_data(xlsx_file_buffer)
-    build_data_preview(df)
+    samples_df = load_samples(samples_df_buffer)
+    infusion_times = load_infusion_times(infusion_times_buffer)
+
+    # Careful ! Maybe some NOPHO_NR have duplicate INFNO at different dates.
+    # Let's just filter them for now and log them in console
+    # Though this does not happen in samples v2
+    clean_infusion_times = remove_patients_with_duplicate_treatments(infusion_times)
+
+    # Merge samples to treatment times and define treatment number
+    samples_with_treatment_no = merge_samples_to_treatment(
+        samples_df, clean_infusion_times
+    )
+    preview_sample(
+        samples_with_treatment_no[samples_with_treatment_no[INFUSION_NO].notnull()]
+    )
+
+    # Filter by INFNO - treatment number when some are selected
+    selected_treatments_to_filter = st.multiselect(
+        "Select treatment no (INFNO) to filter by:", range(1, 9)
+    )
+    if len(selected_treatments_to_filter) == 0:
+        df = samples_with_treatment_no.copy()
+    else:
+        df = samples_with_treatment_no[
+            samples_with_treatment_no[INFUSION_NO].isin(selected_treatments_to_filter)
+        ].copy()
 
     selected_diagnostics = st.sidebar.multiselect(
         "Choose the diagnostics you want to study",
         options=range(0, len(DiagnosticClasses)),
         format_func=lambda i: DiagnosticClasses[i].name,
     )
+
+    with st.beta_expander("DEBUG: check DME graphs"):
+        select_nopho_nr = st.selectbox(
+            "Select patient ID", df.loc[df[P_CODE] == "NPU02739", PATIENT_ID].unique()
+        )
+        st.plotly_chart(
+            beta_visualize_dme(df, select_nopho_nr), use_container_width=True
+        )
 
     diagnostics = init_diagnostics(df, selected_diagnostics)
     run_diagnostics(diagnostics)
@@ -52,30 +94,26 @@ def main():
         st.markdown("---")
 
 
-def initialize_headers():
-    """Write Streamlit main panel and sidebar titles
-    """
+def initialize_app_info():
+    """Write Streamlit main panel and sidebar titles + tab info"""
+    st.set_page_config(page_title="MTX app", page_icon="bar_chart")
     st.title("MTX App")
     st.markdown(
         "Graphs are interactive, scroll them to zoom or double-click to reset view"
     )
-    st.markdown("---")
     st.sidebar.header("Configuration")
 
 
-def build_data_preview(df: pd.DataFrame):
-    """Display Streamlit checkbox to preview the input Dataframe
-    """
-    if st.sidebar.checkbox("Data preview"):
-        st.subheader("Previewing the first 100 rows")
-        st.dataframe(df[:100])
+def preview_sample(df: pd.DataFrame):
+    with st.beta_expander("Preview a random sample of 100 elements"):
+        st.markdown("Sampled data")
+        st.dataframe(df.sample(100))
 
 
 def init_diagnostics(
     df: pd.DataFrame, list_diagnostic_indices: List[int]
 ) -> List[DiagnoseTypes]:
-    """For each index in list_diagnostic_indices, initialize an instance of Diagnostic class with the data
-    """
+    """For each index in list_diagnostic_indices, initialize an instance of Diagnostic class with the data"""
     return [
         DiagnosticClasses[selected_diagnostic_index](df)
         for selected_diagnostic_index in list_diagnostic_indices
@@ -92,22 +130,19 @@ def run_diagnostics(list_diagnostics: List[DiagnoseTypes]):
 
 
 def visualize_summary(diagnostics: List[DiagnoseTypes]):
-    st.header("Summary of diagnostics")
     st.altair_chart(visualize_summary_detection(diagnostics), use_container_width=True)
 
 
 def visualize_diagnostic_samples(diagnostic_data: DiagnoseTypes):
     st.header(diagnostic_data.name)
-    st.subheader("Visualize all samples")
-    if st.checkbox("View", True, key=f"{diagnostic_data.name}_checkbox_all_samples"):
+    with st.beta_expander("Visualize all samples"):
         st.altair_chart(visualize_detected(diagnostic_data), use_container_width=True)
 
 
 def visualize_diagnostic_positive_samples(
     diagnostic_data: DiagnoseTypes, detected_patient_ids: List[str]
 ):
-    st.subheader("Visualize all positive samples")
-    if st.checkbox("View", key=f"{diagnostic_data.name}_checkbox_detected_samples"):
+    with st.beta_expander("Visualize all positive samples"):
         st.altair_chart(
             visualize_detected_by_patient(diagnostic_data, detected_patient_ids),
             use_container_width=True,
@@ -117,8 +152,7 @@ def visualize_diagnostic_positive_samples(
 def visualize_diagnostic_patient(
     diagnostic_data: DiagnoseTypes, detected_patient_ids: List[str]
 ):
-    st.subheader("Visualize samples for a specific patient")
-    if st.checkbox("View", key=f"{diagnostic_data.name}_checkbox_patient_id"):
+    with st.beta_expander("Visualize samples for a specific patient"):
         selected_patient_id = st.selectbox(
             "Choose a detected patient ID (you can paste the ID you need) : ",
             detected_patient_ids,
@@ -134,20 +168,20 @@ def generate_download(diagnostics: List[DiagnoseTypes]):
     all_dfs = (
         pd.concat([d.data[[PATIENT_ID, DETECTION]] for d in diagnostics])
         .groupby(PATIENT_ID)[DETECTION]
-        .agg(PHONOTYPE=(DETECTION, "max"))
+        .agg("max")
         .reset_index()
+        .rename(columns={DETECTION: "PHONOTYPE"})
     )
     all_dfs["PHONOTYPE"] = all_dfs["PHONOTYPE"].astype(int)
-    st.markdown(f"Number of patients in diagnostics : {len(all_dfs)}")
     st.markdown(
-        f"Number of patients with positive phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 1])}"
+        f"""
+    * Number of patients in diagnostics : {len(all_dfs)}
+    * Number of patients with positive phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 1])}
+    * Number of patients with negative phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 0])}
+    """
     )
-    st.markdown(
-        f"Number of patients with negative phenotype : {len(all_dfs[all_dfs['PHONOTYPE'] == 0])}"
-    )
-
-    st.markdown(generate_download_link(all_dfs), unsafe_allow_html=True)
-    st.markdown("---")
+    with st.beta_expander("Generate download link"):
+        st.markdown(generate_download_link(all_dfs), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":

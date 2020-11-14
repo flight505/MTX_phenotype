@@ -12,8 +12,7 @@ def compute_streaks_of_detection(
     column_patient_id: str,
     column_date: datetime,
 ):
-    """Compute streaks of column_variable column
-    """
+    """Compute streaks of column_variable column"""
     df = df.sort_values([column_patient_id, column_date])
     df["shifted_detection"] = df.groupby(column_patient_id)[column_variable].shift(1)
     df["start_of_streak"] = df[column_variable].ne(df[f"shifted_{column_variable}"])

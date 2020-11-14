@@ -5,8 +5,8 @@ pandas-profiling
 autoflake
 bandit
 black
-isort>=4.3.15
 pylint
+reorder-python-imports
 mypy
 
 pytest
