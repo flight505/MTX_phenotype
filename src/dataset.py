@@ -90,21 +90,21 @@ def merge_samples_to_treatment(samples_df, infusion_times_df):
     def date_to_treatment_no(s: pd.Series):
         if s["_merge"] == "left_only":
             return [None, None, None]
-        elif not pd.isnull(s["8"]) and s[SAMPLE_TIME] > s["8"]:
+        elif not pd.isnull(s["8"]) and s[SAMPLE_TIME] >= s["8"]:
             return [8, s["8"], s[SAMPLE_TIME] - s["8"]]
-        elif not pd.isnull(s["7"]) and s[SAMPLE_TIME] > s["7"]:
+        elif not pd.isnull(s["7"]) and s[SAMPLE_TIME] >= s["7"]:
             return [7, s["7"], s[SAMPLE_TIME] - s["7"]]
-        elif not pd.isnull(s["6"]) and s[SAMPLE_TIME] > s["6"]:
+        elif not pd.isnull(s["6"]) and s[SAMPLE_TIME] >= s["6"]:
             return [6, s["6"], s[SAMPLE_TIME] - s["6"]]
-        elif not pd.isnull(s["5"]) and s[SAMPLE_TIME] > s["5"]:
+        elif not pd.isnull(s["5"]) and s[SAMPLE_TIME] >= s["5"]:
             return [5, s["5"], s[SAMPLE_TIME] - s["5"]]
-        elif not pd.isnull(s["4"]) and s[SAMPLE_TIME] > s["4"]:
+        elif not pd.isnull(s["4"]) and s[SAMPLE_TIME] >= s["4"]:
             return [4, s["4"], s[SAMPLE_TIME] - s["4"]]
-        elif not pd.isnull(s["3"]) and s[SAMPLE_TIME] > s["3"]:
+        elif not pd.isnull(s["3"]) and s[SAMPLE_TIME] >= s["3"]:
             return [3, s["3"], s[SAMPLE_TIME] - s["3"]]
-        elif not pd.isnull(s["2"]) and s[SAMPLE_TIME] > s["2"]:
+        elif not pd.isnull(s["2"]) and s[SAMPLE_TIME] >= s["2"]:
             return [2, s["2"], s[SAMPLE_TIME] - s["2"]]
-        elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] > s["1"]:
+        elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] >= s["1"]:
             return [1, s["1"], s[SAMPLE_TIME] - s["1"]]
         elif not pd.isnull(s["1"]) and s[SAMPLE_TIME] < s["1"]:
             return [0, s["1"], s[SAMPLE_TIME] - s["1"]]
@@ -126,12 +126,22 @@ def merge_samples_to_treatment(samples_df, infusion_times_df):
     samples_with_infusion_times = samples_with_infusion_times.drop(columns=["_merge"])
 
     # integrate MP6_stop and SEX separately so we can filter inaccurate data
-    sex_per_patient = infusion_times_df.loc[infusion_times_df[SEX] != 0, [PATIENT_ID, SEX]].drop_duplicates()
-    samples_with_infusion_times = samples_with_infusion_times.merge(sex_per_patient, on=PATIENT_ID)
+    sex_per_patient = infusion_times_df.loc[
+        infusion_times_df[SEX] != 0, [PATIENT_ID, SEX]
+    ].drop_duplicates()
+    samples_with_infusion_times = samples_with_infusion_times.merge(
+        sex_per_patient, on=PATIENT_ID, how="left"
+    )
 
-    MP6_per_patient_treatment = infusion_times_df[[PATIENT_ID, INFUSION_NO, MP6_STOP]].drop_duplicates()
-    MP6_per_patient_treatment[INFUSION_NO] = MP6_per_patient_treatment[INFUSION_NO].astype(float)
-    samples_with_infusion_times = samples_with_infusion_times.merge(MP6_per_patient_treatment, on=[PATIENT_ID, INFUSION_NO])
+    MP6_per_patient_treatment = infusion_times_df[
+        [PATIENT_ID, INFUSION_NO, MP6_STOP]
+    ].drop_duplicates()
+    MP6_per_patient_treatment[INFUSION_NO] = MP6_per_patient_treatment[
+        INFUSION_NO
+    ].astype(float)
+    samples_with_infusion_times = samples_with_infusion_times.merge(
+        MP6_per_patient_treatment, on=[PATIENT_ID, INFUSION_NO], how="left"
+    )
 
     return samples_with_infusion_times
 

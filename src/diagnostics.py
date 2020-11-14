@@ -59,7 +59,8 @@ class Diagnose1(AbstractDiagnose):
     def __init__(self, df: pd.DataFrame):
         super().__init__()
         self.data: pd.DataFrame = df.loc[
-            df[P_CODE] == "NPU02902", [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP]
+            df[P_CODE] == "NPU02902",
+            [PATIENT_ID, SAMPLE_TIME, P_CODE, VALUE, SEX, MP6_STOP],
         ]
         self.param_concentration = st.empty
         self.param_days = st.empty
@@ -532,6 +533,11 @@ class DME(AbstractDiagnose):
             & (self.data[DIFFERENCE_SAMPLETIME_TO_INF_STARTDATE] > 48)
             & (self.data[VALUE] > self.threshold_mtx_48h)
         )
+
+        # TODO: Hmmm the intersection of critera 1-2 with criteria 3-4-5 is null, no luck for fact checking
+        # st.write((criteria_one | criteria_two).value_counts())
+        # st.write((criteria_three | criteria_four | criteria_five).value_counts())
+        # st.write(((criteria_one | criteria_two) & (criteria_three | criteria_four | criteria_five)).value_counts())
 
         # Detection = Criteria 1 or 2 + at least one of criteria 3,4,5
         self.data[DETECTION] = False
