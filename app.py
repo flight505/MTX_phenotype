@@ -31,16 +31,12 @@ def main():
         st.info("Please specify samples and infusion time files in the sidebar")
         return
 
-    # Reset file upload buffers to read the data again
-    # https://discuss.streamlit.io/t/create-multiple-dataframes-from-csv-files-loaded-via-the-multi-file-uploader/6258/4
-    samples_df_buffer.seek(0)
-    infusion_times_buffer.seek(0)
-
     samples_df = load_samples(samples_df_buffer)
     infusion_times = load_infusion_times(infusion_times_buffer)
 
     # Careful ! Maybe some NOPHO_NR have duplicate INFNO at different dates.
     # Let's just filter them for now and log them in console
+    # Though this does not happen in samples v2
     clean_infusion_times = remove_patients_with_duplicate_treatments(infusion_times)
 
     # Merge samples to treatment times and define treatment number
